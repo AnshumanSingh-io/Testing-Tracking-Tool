@@ -1,0 +1,6 @@
+{
+  "name": "Testing Tracker Tool",
+  "description": "A responsive web application to create, track, and manage software test cases. Users can add new tests with details like title, description, priority, and status, view them in a clean card layout, filter by status, and delete them. The data persists in the browser's local storage.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
