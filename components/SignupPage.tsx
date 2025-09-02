@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface SignupPageProps {
-    onSignup: (username: string, password: string, email: string) => Promise<void>;
+    onSignup: (email: string, password: string, username: string) => Promise<void>;
     error: string | null;
 }
 
@@ -15,7 +15,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onSignup, error }) => {
         e.preventDefault();
         if(!username || !password || !email) return;
         setIsLoading(true);
-        await onSignup(username, password, email);
+        await onSignup(email, password, username);
         setIsLoading(false);
     };
 

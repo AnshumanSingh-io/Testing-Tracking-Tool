@@ -5,20 +5,20 @@ import SignupPage from './components/SignupPage';
 import Dashboard from './components/Dashboard';
 
 const App: React.FC = () => {
-    const { currentUser, login, signup, logout, updateUser } = useAuth();
+    const { currentUser, login, signup, logout, updateUser, loading } = useAuth();
     const [view, setView] = useState<'login' | 'signup'>('login');
     const [authError, setAuthError] = useState<string | null>(null);
 
-    const handleLogin = useCallback(async (username: string, password: string) => {
+    const handleLogin = useCallback(async (email: string, password: string) => {
         try {
             setAuthError(null);
-            await login(username, password);
+            await login(email, password);
         } catch (error: any) {
             setAuthError(error.message);
         }
     }, [login]);
 
-    const handleSignup = useCallback(async (username: string, password: string, email: string) => {
+    const handleSignup = useCallback(async (email: string, password: string, username: string) => {
         try {
             setAuthError(null);
             await signup(username, password, email);
@@ -27,6 +27,17 @@ const App: React.FC = () => {
             setAuthError(error.message);
         }
     }, [signup]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-black text-slate-100 font-sans flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+                    <p className="text-gray-400">Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (!currentUser) {
         return (

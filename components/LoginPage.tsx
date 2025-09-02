@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 
 interface LoginPageProps {
-    onLogin: (username: string, password: string) => Promise<void>;
+    onLogin: (email: string, password: string) => Promise<void>;
     error: string | null;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin, error }) => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if(!username || !password) return;
+        if(!email || !password) return;
         setIsLoading(true);
-        await onLogin(username, password);
+        await onLogin(email, password);
         setIsLoading(false);
     };
 
@@ -23,20 +23,21 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, error }) => {
             {error && <div className="bg-rose-500/20 text-rose-300 p-3 rounded-md mb-6 text-center text-sm">{error}</div>}
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="login-username" className="block text-sm font-medium text-gray-300 mb-1">Username</label>
+                  <label htmlFor="login-email" className="block text-sm font-medium text-gray-300 mb-1">Email</label>
                   <div className="relative">
                      <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                           <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                         </svg>
                      </span>
                      <input
-                        type="text"
-                        id="login-username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        type="email"
+                        id="login-email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg p-2.5 pl-10 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                        placeholder="Enter your username"
+                        placeholder="Enter your email"
                         required
                         />
                   </div>

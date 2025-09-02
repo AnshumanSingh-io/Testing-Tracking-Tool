@@ -1,74 +1,122 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import type { User } from '../types';
-import useLocalStorage from './useLocalStorage';
-
-const USERS_KEY = 'testing_tracker_users';
-const SESSION_KEY = 'testing_tracker_session_user_id';
 
 export const useAuth = () => {
-  const [users, setUsers] = useLocalStorage<User[]>(USERS_KEY, []);
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    try {
-      const userId = window.sessionStorage.getItem(SESSION_KEY);
-      if (userId) {
-        const storedUsers = JSON.parse(window.localStorage.getItem(USERS_KEY) || '[]') as User[];
-        return storedUsers.find(u => u.id === userId) || null;
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setCurrentUser({
+          id: session.user.id,
+          username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          password: '' // Not stored for Supabase auth
+        });
       }
-      return null;
-    } catch (e) {
-      console.error('Failed to initialize auth state:', e);
-      return null;
-    }
-  });
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setCurrentUser({
+          id: session.user.id,
+          username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          password: ''
+        });
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const login = useCallback(
-    (username: string, password: string): Promise<User> => {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
-          if (user) {
-            window.sessionStorage.setItem(SESSION_KEY, user.id);
-            setCurrentUser(user);
-            resolve(user);
-          } else {
-            reject(new Error('Invalid username or password.'));
-          }
-        }, 500); // Simulate network delay
+    async (email: string, password: string): Promise<User> => {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (!data.user) {
+        throw new Error('Login failed');
+      }
+
+      const user: User = {
+        id: data.user.id,
+        username: data.user.user_metadata?.username || data.user.email?.split('@')[0] || 'User',
+        email: data.user.email || '',
+        password: ''
+      };
+
+      setCurrentUser(user);
+      return user;
     },
-    [users]
+    []
   );
   
   const signup = useCallback(
-    (username: string, password: string, email: string): Promise<User> => {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
-            return reject(new Error('Username is already taken.'));
-          }
-          if (password.length < 6) {
-            return reject(new Error('Password must be at least 6 characters long.'));
-          }
-          const newUser: User = { id: crypto.randomUUID(), username, password, email };
-          setUsers(prevUsers => [...prevUsers, newUser]);
-          window.sessionStorage.setItem(SESSION_KEY, newUser.id);
-          setCurrentUser(newUser);
-          resolve(newUser);
-        }, 500); // Simulate network delay
+    async (username: string, password: string, email: string): Promise<User> => {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username,
+          },
+        },
       });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (!data.user) {
+        throw new Error('Signup failed');
+      }
+
+      const user: User = {
+        id: data.user.id,
+        username,
+        email,
+        password: ''
+      };
+
+      setCurrentUser(user);
+      return user;
     },
-    [users, setUsers]
+    []
   );
   
-  const updateUser = useCallback((updatedUser: User) => {
-    setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
-    setCurrentUser(updatedUser);
-  }, [setUsers]);
+  const updateUser = useCallback(async (updatedUser: User) => {
+    const { error } = await supabase.auth.updateUser({
+      email: updatedUser.email,
+      data: {
+        username: updatedUser.username,
+      },
+    });
 
-  const logout = useCallback(() => {
-    window.sessionStorage.removeItem(SESSION_KEY);
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    setCurrentUser(updatedUser);
+  }, []);
+
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     setCurrentUser(null);
   }, []);
 
-  return { currentUser, login, signup, logout, updateUser };
+  return { currentUser, login, signup, logout, updateUser, loading };
 };
