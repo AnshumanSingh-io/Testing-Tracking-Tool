@@ -13,7 +13,6 @@ import TestCaseHistoryModal from './TestCaseHistoryModal';
 import VersionHistoryModal from './VersionHistoryModal';
 import PageHeader from './PageHeader';
 import TestCaseCardSkeleton from './TestCaseCardSkeleton';
-import GenerateTestCasesModal from './GenerateTestCasesModal';
 import TestRepositoryModal from './TestRepositoryModal';
 import TestCaseDetailModal from './TestCaseDetailModal';
 import BulkUploadModal from './BulkUploadModal';
@@ -66,7 +65,6 @@ const ProjectDetailView: React.FC<ProjectDetailViewProps> = (props) => {
   const [sortBy, setSortBy] = useState<string>('createdAt-desc');
   const [searchTerm, setSearchTerm] = useState('');
   const [showTestCaseForm, setShowTestCaseForm] = useState<boolean>(false);
-  const [showGenerateModal, setShowGenerateModal] = useState<boolean>(false);
   const [showRepositoryModal, setShowRepositoryModal] = useState<boolean>(false);
   const [showUploadModal, setShowUploadModal] = useState<boolean>(false); 
   const [testCaseToEdit, setTestCaseToEdit] = useState<TestCase | null>(null);
@@ -104,11 +102,6 @@ const ProjectDetailView: React.FC<ProjectDetailViewProps> = (props) => {
     }
     setShowTestCaseForm(false);
     setTestCaseToEdit(null);
-  };
-
-  const handleBulkAddTestCases = (cases: TestCaseData[]) => {
-    onAddMultipleTestCases(cases);
-    setShowGenerateModal(false);
   };
   
   const handleBulkUpload = (cases: TestCaseData[]) => {
@@ -274,7 +267,6 @@ const ProjectDetailView: React.FC<ProjectDetailViewProps> = (props) => {
                     sortBy={sortBy} onSortByChange={setSortBy}
                     searchTerm={searchTerm} onSearchTermChange={setSearchTerm}
                     onAddNewClick={() => { setTestCaseToEdit(null); setShowTestCaseForm(true); }}
-                    onGenerateClick={() => setShowGenerateModal(true)}
                     onImportClick={() => setShowRepositoryModal(true)}
                     onUploadClick={() => setShowUploadModal(true)}
                     onEnterSelectionMode={() => setSelectionMode(true)}
@@ -351,7 +343,6 @@ const ProjectDetailView: React.FC<ProjectDetailViewProps> = (props) => {
                 existingAttachments={testCaseToEdit ? attachments.filter(a => a.testCaseId === testCaseToEdit.id) : []}
             />
         )}
-        {showGenerateModal && <GenerateTestCasesModal onAddTestCases={handleBulkAddTestCases} onCancel={() => setShowGenerateModal(false)} />}
         {showRepositoryModal && <TestRepositoryModal currentProjectId={project.id} onImport={handleImport} onCancel={() => setShowRepositoryModal(false)} />}
         {showUploadModal && <BulkUploadModal onImport={handleBulkUpload} onCancel={() => setShowUploadModal(false)} />}
         {showCreateRunModal && <CreateTestRunModal onSave={handleCreateRunFromSelection} onCancel={() => setShowCreateRunModal(false)} allUsers={allUsers} />}

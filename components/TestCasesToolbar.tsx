@@ -13,7 +13,6 @@ interface TestCasesToolbarProps {
     searchTerm: string;
     onSearchTermChange: (term: string) => void;
     onAddNewClick: () => void;
-    onGenerateClick: () => void;
     onImportClick: () => void; 
     onUploadClick: () => void;
     onEnterSelectionMode: () => void;
@@ -53,7 +52,6 @@ const TestCasesToolbar: React.FC<TestCasesToolbarProps> = ({
     sortBy, onSortByChange,
     searchTerm, onSearchTermChange,
     onAddNewClick,
-    onGenerateClick,
     onImportClick,
     onUploadClick,
     onEnterSelectionMode,
@@ -199,13 +197,6 @@ const TestCasesToolbar: React.FC<TestCasesToolbarProps> = ({
                             >
                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" /></svg>
                                  Library
-                            </button>
-                             <button
-                                onClick={onGenerateClick}
-                                className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-1.5 px-3 rounded-lg transition-colors flex items-center gap-1.5 text-xs shadow-lg"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9.628 2.034a1 1 0 011.744 0l1.494 2.936m-5.321-1.493a1 1 0 011.493 1.493L6 8.5l-2.936 1.494a1 1 0 01-1.493-1.493L4.5 6l-1.493-2.936a1 1 0 011.493-1.493L6 3.5l1.064-2.007zM16 8.5a1 1 0 00-1.493-1.493L13.5 6l-1.436-1.064a1 1 0 00-1.493 1.493L12 8.5l-1.494 2.936a1 1 0 001.493 1.493L13.5 12l1.064 2.007a1 1 0 001.493-1.493L14.5 10.5l2.936-1.494a1 1 0 00.564-1.506z" clipRule="evenodd" /></svg>
-                                AI
                             </button>
                             {(viewMode === 'table' || viewMode === 'grid') && (
                                 <button
