@@ -1,93 +1,88 @@
-import React, { useState, useCallback } from 'react';
+
+import React, { useState } from 'react';
 import { useAuth } from './hooks/useAuth';
+import Dashboard from './components/Dashboard';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
-import Dashboard from './components/Dashboard';
+import { UserRole } from './types';
 
 const App: React.FC = () => {
-    const { currentUser, login, signup, logout, updateUser, loading } = useAuth();
-    const [view, setView] = useState<'login' | 'signup'>('login');
+    const { currentUser, allUsers, login, signup, logout, updateUser, isAuthLoading } = useAuth();
+    const [authView, setAuthView] = useState<'login' | 'signup'>('login');
     const [authError, setAuthError] = useState<string | null>(null);
 
-    const handleLogin = useCallback(async (email: string, password: string) => {
+    const handleLogin = async (username: string, password: string) => {
         try {
             setAuthError(null);
-            await login(email, password);
+            await login(username, password);
         } catch (error: any) {
             setAuthError(error.message);
         }
-    }, [login]);
+    };
 
-    const handleSignup = useCallback(async (email: string, password: string, username: string) => {
+    const handleSignup = async (username: string, password: string, email: string, role: UserRole) => {
         try {
             setAuthError(null);
-            await signup(username, password, email);
-        } catch (error: any)
-{
+            await signup(username, password, email, role); // Pass role
+        } catch (error: any) {
             setAuthError(error.message);
         }
-    }, [signup]);
-
-    if (loading) {
+    };
+    
+    if (isAuthLoading) {
         return (
-            <div className="min-h-screen bg-black text-slate-100 font-sans flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto mb-4"></div>
-                    <p className="text-gray-400">Loading...</p>
-                </div>
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-500"></div>
             </div>
         );
     }
 
     if (!currentUser) {
         return (
-             <div className="min-h-screen bg-black text-slate-100 font-sans flex flex-col items-center justify-center p-4">
-                <div className="w-full max-w-md">
-                    <div className="flex items-center justify-center gap-4 mb-8 animate-slide-in-up">
-                        <div className="p-2 bg-indigo-600 rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+            <main className="min-h-screen bg-black text-slate-200 flex flex-col items-center justify-center p-4 sm:p-6 font-sans">
+                 <div className="w-full max-w-md mx-auto">
+                    <div className="text-center mb-8 animate-fade-in">
+                        <div className="flex justify-center items-center gap-3 mb-4">
+                            <div className="p-2 bg-indigo-600 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
+                                Test Tracker
+                            </h1>
                         </div>
-                        <h1 className="text-3xl font-bold text-white tracking-tight">
-                            Testing Tracker Tool
-                        </h1>
+                        <p className="text-lg text-gray-400 mt-2">Manage your testing projects with ease.</p>
                     </div>
 
-                    <div className="bg-gray-950 rounded-xl shadow-2xl border border-gray-800 animate-slide-in-up" style={{ animationDelay: '100ms' }}>
-                        {/* Tabs */}
-                        <div className="flex border-b border-gray-800">
+                    <div className="bg-gray-950/50 border border-gray-800 rounded-2xl shadow-2xl p-6 sm:p-8 transition-all duration-300">
+                        <div className="flex justify-center border-b border-gray-800 mb-6">
                             <button
-                                onClick={() => { setView('login'); setAuthError(null); }}
-                                className={`flex-1 p-4 font-semibold text-center transition-colors duration-300 rounded-tl-lg ${view === 'login' ? 'text-indigo-400 border-b-2 border-indigo-500 bg-gray-950' : 'text-gray-400 hover:bg-gray-800/50'}`}
-                                aria-current={view === 'login'}
+                                onClick={() => { setAuthView('login'); setAuthError(null); }}
+                                className={`px-6 py-3 text-lg font-semibold transition-colors ${authView === 'login' ? 'text-indigo-400 border-b-2 border-indigo-500' : 'text-gray-400 hover:text-white'}`}
                             >
                                 Log In
                             </button>
                             <button
-                                onClick={() => { setView('signup'); setAuthError(null); }}
-                                className={`flex-1 p-4 font-semibold text-center transition-colors duration-300 rounded-tr-lg ${view === 'signup' ? 'text-indigo-400 border-b-2 border-indigo-500 bg-gray-950' : 'text-gray-400 hover:bg-gray-800/50'}`}
-                                aria-current={view === 'signup'}
+                                onClick={() => { setAuthView('signup'); setAuthError(null); }}
+                                className={`px-6 py-3 text-lg font-semibold transition-colors ${authView === 'signup' ? 'text-indigo-400 border-b-2 border-indigo-500' : 'text-gray-400 hover:text-white'}`}
                             >
                                 Sign Up
                             </button>
                         </div>
 
-                        {/* Form Content Area */}
-                        <div className="p-8">
-                            {view === 'login' ? (
-                                <LoginPage onLogin={handleLogin} error={authError} />
-                            ) : (
-                                <SignupPage onSignup={handleSignup} error={authError} />
-                            )}
-                        </div>
+                        {authView === 'login' ? (
+                            <LoginPage onLogin={handleLogin} error={authError} />
+                        ) : (
+                            <SignupPage onSignup={handleSignup} error={authError} />
+                        )}
                     </div>
-                 </div>
-            </div>
+                </div>
+            </main>
         );
     }
-    
-    return <Dashboard user={currentUser} onLogout={logout} updateUser={updateUser} />;
+
+    return <Dashboard user={currentUser} allUsers={allUsers} onLogout={logout} updateUser={updateUser} />;
 };
 
 export default App;

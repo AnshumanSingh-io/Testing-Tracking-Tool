@@ -8,9 +8,11 @@ interface TestRunCardProps {
         executed: number;
     };
     onSelect: () => void;
+    testerName: string;
+    projectName?: string;
 }
 
-const TestRunCard: React.FC<TestRunCardProps> = ({ run, stats, onSelect }) => {
+const TestRunCard: React.FC<TestRunCardProps> = ({ run, stats, onSelect, testerName, projectName }) => {
     const progress = stats.total > 0 ? Math.round((stats.executed / stats.total) * 100) : 0;
 
     return (
@@ -19,9 +21,10 @@ const TestRunCard: React.FC<TestRunCardProps> = ({ run, stats, onSelect }) => {
             onClick={onSelect}
         >
             <div className="p-5">
+                {projectName && <div className="text-xs font-semibold text-indigo-400 mb-1">{projectName}</div>}
                 <h3 className="text-xl font-bold text-white truncate mb-2">{run.name}</h3>
                 <div className="text-sm text-gray-400 mb-4">
-                    Assigned to: <span className="font-semibold text-gray-200">{run.tester}</span>
+                    Assigned to: <span className="font-semibold text-gray-200">{testerName}</span>
                 </div>
 
                 <div>

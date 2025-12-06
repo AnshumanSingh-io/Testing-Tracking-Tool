@@ -1,56 +1,65 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✅</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Testing Tracker Tool</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      /* For custom scrollbar styling */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #000000; /* bg-black */
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #374151; /* bg-gray-700 */
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #4b5563; /* bg-gray-600 */
-      }
-      
-      @keyframes slide-in-from-left {
-        0% { transform: translateX(-20px); opacity: 0; }
-        100% { transform: translateX(0); opacity: 1; }
-      }
-      @keyframes slide-in-up {
-        0% { transform: translateY(20px); opacity: 0; }
-        100% { transform: translateY(0); opacity: 1; }
-      }
-      @keyframes subtle-fade-in {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-      }
-      /* A simple fade-in for modals and other overlays */
       @keyframes fade-in {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
       }
       .animate-fade-in {
-        animation: fade-in 0.3s ease-out forwards;
+        animation: fade-in 0.5s ease-out forwards;
       }
-
-      .animate-slide-in-from-left {
-          animation: slide-in-from-left 0.5s ease-out forwards;
-      }
-      .animate-slide-in-up {
-          animation: slide-in-up 0.5s ease-out forwards;
+      @keyframes subtle-fade-in {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
       }
       .animate-subtle-fade-in {
-          animation: subtle-fade-in 0.5s ease-out forwards;
+        animation: subtle-fade-in 0.4s ease-out forwards;
+      }
+      @keyframes slide-in-up {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-slide-in-up {
+          animation: slide-in-up 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      }
+      @keyframes slide-in-from-left {
+        from { transform: translateX(-100%); }
+        to { transform: translateX(0); }
+      }
+      .animate-slide-in-from-left {
+          animation: slide-in-from-left 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      }
+      @keyframes pop-in {
+        from { opacity: 0; transform: scale(0.95) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+      }
+      .animate-pop-in {
+        animation: pop-in 0.4s ease-out forwards;
+        opacity: 0;
+      }
+      @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+      }
+      .animate-shimmer {
+        background-color: #1f2937;
+        background-image: linear-gradient(to right, #1f2937 0%, #374151 20%, #1f2937 40%, #1f2937 100%);
+        background-repeat: no-repeat;
+        background-size: 2000px 100%; 
+        animation: shimmer 2s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      .animate-spin {
+        animation: spin 1s linear infinite;
       }
     </style>
 <script type="importmap">
@@ -61,12 +70,14 @@
     "react/": "https://esm.sh/react@^19.1.0/",
     "vite": "https://esm.sh/vite@^7.0.4",
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^4.6.0",
-    "@google/genai": "https://esm.sh/@google/genai@^1.9.0"
+    "@google/genai": "https://esm.sh/@google/genai@^1.9.0",
+    "dexie": "https://esm.sh/dexie@^4.0.7",
+    "xlsx": "https://esm.sh/xlsx@0.18.5"
   }
 }
 </script>
 </head>
-  <body class="bg-black">
+  <body class="bg-black text-slate-200">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

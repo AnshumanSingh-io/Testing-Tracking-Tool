@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
+import { User } from '../types';
 
 interface CreateTestRunModalProps {
-  onSave: (data: { name: string; tester: string }) => void;
+  onSave: (data: { name: string; testerId: string }) => void;
   onCancel: () => void;
+  allUsers: User[];
 }
 
-const CreateTestRunModal: React.FC<CreateTestRunModalProps> = ({ onSave, onCancel }) => {
+const CreateTestRunModal: React.FC<CreateTestRunModalProps> = ({ onSave, onCancel, allUsers }) => {
   const [name, setName] = useState('');
-  const [tester, setTester] = useState('');
+  const [testerId, setTesterId] = useState<string>(allUsers[0]?.id || '');
   const [error, setError] = useState<string>('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -16,12 +18,12 @@ const CreateTestRunModal: React.FC<CreateTestRunModalProps> = ({ onSave, onCance
       setError('Test run name is required.');
       return;
     }
-     if (!tester.trim()) {
-      setError('Tester name is required.');
+     if (!testerId) {
+      setError('A tester must be assigned.');
       return;
     }
     setError('');
-    onSave({ name, tester });
+    onSave({ name, testerId });
   };
 
   return (
@@ -49,16 +51,21 @@ const CreateTestRunModal: React.FC<CreateTestRunModalProps> = ({ onSave, onCance
             />
           </div>
            <div>
-            <label htmlFor="tester-name" className="block text-sm font-medium text-gray-300 mb-1">Assigned Tester</label>
-            <input
-              type="text"
-              id="tester-name"
-              value={tester}
-              onChange={(e) => setTester(e.target.value)}
+            <label htmlFor="tester-id" className="block text-sm font-medium text-gray-300 mb-1">Assigned Tester</label>
+            <select
+              id="tester-id"
+              value={testerId}
+              onChange={(e) => setTesterId(e.target.value)}
               className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-              placeholder="e.g., Anshuman"
               required
-            />
+            >
+              <option value="" disabled>Select a user</option>
+              {allUsers.map(user => (
+                <option key={user.id} value={user.id}>
+                  {user.username}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="flex justify-end gap-4 pt-4">
              <button

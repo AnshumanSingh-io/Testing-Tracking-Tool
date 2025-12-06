@@ -4,6 +4,7 @@ import TestCaseCard from './TestCaseCard';
 
 interface TestCaseListProps {
   testCases: TestCase[];
+  isOwner: boolean;
   onDeleteTestCase: (id: string) => void;
   onEditTestCase: (testCase: TestCase) => void;
   onViewExecutionHistory: (testCase: TestCase) => void;
@@ -16,6 +17,7 @@ interface TestCaseListProps {
 
 const TestCaseList: React.FC<TestCaseListProps> = ({ 
   testCases, 
+  isOwner,
   onDeleteTestCase, 
   onEditTestCase,
   onViewExecutionHistory,
@@ -45,18 +47,24 @@ const TestCaseList: React.FC<TestCaseListProps> = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {filteredTestCases.map(tc => (
-        <TestCaseCard
+      {filteredTestCases.map((tc, index) => (
+        <div
           key={tc.id}
-          testCase={tc}
-          onDelete={onDeleteTestCase}
-          onEdit={onEditTestCase}
-          onViewExecutionHistory={onViewExecutionHistory}
-          onViewVersionHistory={onViewVersionHistory}
-          selectionMode={selectionMode}
-          isSelected={selectedTestCases.has(tc.id)}
-          onToggleSelection={onToggleSelection}
-        />
+          className="animate-pop-in"
+          style={{ animationDelay: `${index * 50}ms` }}
+        >
+          <TestCaseCard
+            testCase={tc}
+            isOwner={isOwner}
+            onDelete={onDeleteTestCase}
+            onEdit={onEditTestCase}
+            onViewExecutionHistory={onViewExecutionHistory}
+            onViewVersionHistory={onViewVersionHistory}
+            selectionMode={selectionMode}
+            isSelected={selectedTestCases.has(tc.id)}
+            onToggleSelection={onToggleSelection}
+          />
+        </div>
       ))}
     </div>
   );

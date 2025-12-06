@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Project } from '../types';
 
@@ -65,8 +66,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, testCaseCount, onSel
                 <p className="text-gray-400 text-sm h-16 overflow-y-auto pr-2 mb-4">
                     {description || 'No description provided.'}
                 </p>
-                <div className="text-sm text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-3 py-1 inline-block">
-                    {testCaseCount} {testCaseCount === 1 ? 'Test Case' : 'Test Cases'}
+                <div className="flex items-center gap-2">
+                    <div className="text-sm text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-3 py-1 inline-block">
+                        {testCaseCount} {testCaseCount === 1 ? 'Test Case' : 'Test Cases'}
+                    </div>
+                     {project.members && project.members.length > 0 && (
+                         <div className="text-sm text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1 inline-block">
+                            {project.members.length + 1} Members
+                         </div>
+                     )}
                 </div>
             </div>
       

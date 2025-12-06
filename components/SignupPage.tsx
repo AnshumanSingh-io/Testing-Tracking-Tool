@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
+import { UserRole } from '../types';
 
 interface SignupPageProps {
-    onSignup: (email: string, password: string, username: string) => Promise<void>;
+    onSignup: (username: string, password: string, email: string, role: UserRole) => Promise<void>;
     error: string | null;
 }
 
@@ -9,13 +11,15 @@ const SignupPage: React.FC<SignupPageProps> = ({ onSignup, error }) => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState<UserRole>(UserRole.USER);
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if(!username || !password || !email) return;
         setIsLoading(true);
-        await onSignup(email, password, username);
+        // Pass the selected role to the signup handler
+        await onSignup(username, password, email, role);
         setIsLoading(false);
     };
 
@@ -23,6 +27,53 @@ const SignupPage: React.FC<SignupPageProps> = ({ onSignup, error }) => {
         <div className="animate-subtle-fade-in">
             {error && <div className="bg-rose-500/20 text-rose-300 p-3 rounded-md mb-6 text-center text-sm">{error}</div>}
             <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="signup-role" className="block text-sm font-medium text-gray-300 mb-2">Select Your Role</label>
+                  <div className="grid grid-cols-1 gap-3">
+                      <div 
+                        onClick={() => setRole(UserRole.ADMIN)}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${role === UserRole.ADMIN ? 'bg-indigo-600/20 border-indigo-500 ring-1 ring-indigo-500' : 'bg-gray-900 border-gray-700 hover:border-gray-600'}`}
+                      >
+                          <div className="flex items-center gap-2 mb-1">
+                              <span className="w-4 h-4 rounded-full border border-gray-500 flex items-center justify-center">
+                                  {role === UserRole.ADMIN && <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>}
+                              </span>
+                              <span className="font-bold text-white text-sm">Admin</span>
+                              <span className="text-[10px] bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded ml-auto">Full Access</span>
+                          </div>
+                          <p className="text-xs text-gray-400 ml-6">Manage all projects, users, and system settings.</p>
+                      </div>
+
+                      <div 
+                        onClick={() => setRole(UserRole.SUPER_USER)}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${role === UserRole.SUPER_USER ? 'bg-indigo-600/20 border-indigo-500 ring-1 ring-indigo-500' : 'bg-gray-900 border-gray-700 hover:border-gray-600'}`}
+                      >
+                          <div className="flex items-center gap-2 mb-1">
+                               <span className="w-4 h-4 rounded-full border border-gray-500 flex items-center justify-center">
+                                  {role === UserRole.SUPER_USER && <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>}
+                              </span>
+                              <span className="font-bold text-white text-sm">Super User (Lead)</span>
+                              <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded ml-auto">Team Management</span>
+                          </div>
+                          <p className="text-xs text-gray-400 ml-6">Create projects and manage team members.</p>
+                      </div>
+
+                      <div 
+                        onClick={() => setRole(UserRole.USER)}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${role === UserRole.USER ? 'bg-indigo-600/20 border-indigo-500 ring-1 ring-indigo-500' : 'bg-gray-900 border-gray-700 hover:border-gray-600'}`}
+                      >
+                          <div className="flex items-center gap-2 mb-1">
+                               <span className="w-4 h-4 rounded-full border border-gray-500 flex items-center justify-center">
+                                  {role === UserRole.USER && <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>}
+                              </span>
+                              <span className="font-bold text-white text-sm">User (Tester)</span>
+                              <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded ml-auto">Execution Only</span>
+                          </div>
+                          <p className="text-xs text-gray-400 ml-6">Execute assigned tests and report bugs.</p>
+                      </div>
+                  </div>
+                </div>
+
                 <div>
                   <label htmlFor="signup-username" className="block text-sm font-medium text-gray-300 mb-1">Username</label>
                   <div className="relative">

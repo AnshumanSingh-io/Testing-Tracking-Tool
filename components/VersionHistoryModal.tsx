@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { TestCase, TestCaseVersion } from '../types';
 
@@ -6,9 +7,10 @@ interface VersionHistoryModalProps {
   versions: TestCaseVersion[];
   onRollback: (versionId: string) => void;
   onCancel: () => void;
+  isOwner: boolean;
 }
 
-const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ testCase, versions, onRollback, onCancel }) => {
+const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ testCase, versions, onRollback, onCancel, isOwner }) => {
     
     // Combine current version with historical versions for a complete log
     const fullHistory = [
@@ -21,6 +23,11 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ testCase, ver
                 description: testCase.description,
                 priority: testCase.priority,
                 status: testCase.status,
+                menuUsed: testCase.menuUsed,
+                testData: testCase.testData,
+                observedBehaviour: testCase.observedBehaviour,
+                screenshotRef: testCase.screenshotRef,
+                suggestions: testCase.suggestions,
             }
         },
         ...versions,
@@ -38,7 +45,7 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ testCase, ver
             onClick={onCancel}
         >
           <div 
-            className="bg-gray-950 p-6 rounded-xl shadow-2xl border border-gray-800 w-full max-w-3xl max-h-[80vh] flex flex-col"
+            className="bg-gray-950 p-6 rounded-xl shadow-2xl border border-gray-800 w-full max-w-4xl max-h-[85vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
@@ -53,8 +60,8 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ testCase, ver
 
             <div className="flex-grow overflow-y-auto pr-2 space-y-4">
                 {fullHistory.map((item, index) => (
-                   <div key={item.id} className="bg-black/50 p-4 rounded-lg border border-gray-800">
-                       <div className="flex justify-between items-center">
+                   <div key={item.id} className="bg-black/50 p-5 rounded-lg border border-gray-800">
+                       <div className="flex justify-between items-center mb-4">
                            <div>
                                 <p className="font-bold text-gray-200 text-lg">
                                     Version {item.version}
@@ -64,7 +71,7 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ testCase, ver
                                     {new Date(item.changedAt).toLocaleString()}
                                 </p>
                            </div>
-                           {item.id !== 'current' && (
+                           {item.id !== 'current' && isOwner && (
                              <button
                                 onClick={() => handleRollbackClick(item.id)}
                                 className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm flex items-center gap-2"
@@ -76,12 +83,43 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ testCase, ver
                              </button>
                            )}
                        </div>
-                       <div className="mt-4 pt-4 border-t border-gray-800/50 text-sm">
-                            <p><strong className="text-gray-400">Title:</strong> {item.data.title}</p>
-                            <p><strong className="text-gray-400">Status:</strong> {item.data.status}</p>
-                            <p><strong className="text-gray-400">Priority:</strong> {item.data.priority}</p>
-                            <p className="mt-2"><strong className="text-gray-400">Description:</strong></p>
-                            <p className="text-gray-300 whitespace-pre-wrap">{item.data.description || 'N/A'}</p>
+                       
+                       <div className="pt-4 border-t border-gray-800/50 text-sm space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                                <div><strong className="text-gray-500 block text-xs uppercase mb-1">Title</strong> <span className="text-white block">{item.data.title}</span></div>
+                                <div><strong className="text-gray-500 block text-xs uppercase mb-1">Menu Used</strong> <span className="text-indigo-300 font-mono text-xs bg-indigo-500/10 px-2 py-1 rounded inline-block">{item.data.menuUsed || '-'}</span></div>
+                                
+                                <div className="flex gap-6">
+                                    <div><strong className="text-gray-500 block text-xs uppercase mb-1">Status</strong> <span className={`inline-block px-2 py-0.5 rounded text-xs border ${item.data.status === 'PASS' ? 'border-emerald-500/30 text-emerald-400' : item.data.status === 'FAIL' ? 'border-rose-500/30 text-rose-400' : 'border-gray-700 text-gray-400'}`}>{item.data.status}</span></div>
+                                    <div><strong className="text-gray-500 block text-xs uppercase mb-1">Priority</strong> <span className="text-white">{item.data.priority}</span></div>
+                                </div>
+                                <div><strong className="text-gray-500 block text-xs uppercase mb-1">Screenshot Ref</strong> <span className="text-gray-300 font-mono text-xs">{item.data.screenshotRef || '-'}</span></div>
+                            </div>
+                            
+                            {item.data.testData && (
+                                <div>
+                                    <strong className="text-gray-500 block text-xs uppercase mb-1">Test Data</strong>
+                                    <div className="text-gray-300 whitespace-pre-wrap bg-gray-900 p-2 rounded border border-gray-800 font-mono text-xs">{item.data.testData}</div>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <strong className="text-emerald-600 block text-xs uppercase mb-1">Expected Behaviour</strong>
+                                    <div className="text-gray-300 whitespace-pre-wrap text-sm bg-gray-900/30 p-2 rounded">{item.data.description || 'N/A'}</div>
+                                </div>
+                                <div>
+                                    <strong className="text-amber-600 block text-xs uppercase mb-1">Observed Behaviour</strong>
+                                    <div className="text-gray-300 whitespace-pre-wrap text-sm bg-gray-900/30 p-2 rounded">{item.data.observedBehaviour || 'N/A'}</div>
+                                </div>
+                            </div>
+                            
+                            {item.data.suggestions && (
+                                <div className="bg-amber-500/5 p-2 rounded border border-amber-500/10">
+                                    <strong className="text-amber-500/70 block text-xs uppercase mb-1">Suggestions</strong>
+                                    <div className="text-amber-200/80 italic text-xs">{item.data.suggestions}</div>
+                                </div>
+                            )}
                        </div>
                    </div>
                ))}

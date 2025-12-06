@@ -1,122 +1,95 @@
+
 import { useState, useCallback, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
 import type { User } from '../types';
+import { UserRole } from '../types';
+import { db } from '../db';
+
+const SESSION_KEY = 'testing_tracker_session_user_id';
 
 export const useAuth = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setCurrentUser({
-          id: session.user.id,
-          username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
-          email: session.user.email || '',
-          password: '' // Not stored for Supabase auth
-        });
+    const initializeAuth = async () => {
+      setIsAuthLoading(true);
+      try {
+        const [users] = await Promise.all([
+            db.users.toArray(),
+        ]);
+        setAllUsers(users);
+        
+        const userId = window.sessionStorage.getItem(SESSION_KEY);
+        if (userId) {
+          const user = users.find(u => u.id === userId);
+          setCurrentUser(user || null);
+        }
+      } catch (e) {
+        console.error('Failed to initialize auth state:', e);
+      } finally {
+        setIsAuthLoading(false);
       }
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setCurrentUser({
-          id: session.user.id,
-          username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
-          email: session.user.email || '',
-          password: ''
-        });
-      } else {
-        setCurrentUser(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    };
+    initializeAuth();
   }, []);
 
   const login = useCallback(
-    async (email: string, password: string): Promise<User> => {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        throw new Error(error.message);
+    async (username: string, password: string): Promise<User> => {
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const user = await db.users.where('username').equalsIgnoreCase(username).first();
+      if (user && user.password === password) {
+        window.sessionStorage.setItem(SESSION_KEY, user.id);
+        setCurrentUser(user);
+        return user;
+      } else {
+        throw new Error('Invalid username or password.');
       }
-
-      if (!data.user) {
-        throw new Error('Login failed');
-      }
-
-      const user: User = {
-        id: data.user.id,
-        username: data.user.user_metadata?.username || data.user.email?.split('@')[0] || 'User',
-        email: data.user.email || '',
-        password: ''
-      };
-
-      setCurrentUser(user);
-      return user;
     },
     []
   );
   
   const signup = useCallback(
-    async (username: string, password: string, email: string): Promise<User> => {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username,
-          },
-        },
-      });
-
-      if (error) {
-        throw new Error(error.message);
+    async (username: string, password: string, email: string, role: UserRole): Promise<User> => {
+       // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters long.');
+      }
+      
+      const existingUser = await db.users.where('username').equalsIgnoreCase(username).first();
+      if (existingUser) {
+        throw new Error('Username is already taken.');
       }
 
-      if (!data.user) {
-        throw new Error('Signup failed');
-      }
-
-      const user: User = {
-        id: data.user.id,
-        username,
-        email,
-        password: ''
+      const newUser: User = { 
+        id: crypto.randomUUID(), 
+        username, 
+        password, 
+        email, 
+        role // Store the selected role
       };
-
-      setCurrentUser(user);
-      return user;
+      
+      await db.users.add(newUser);
+      setAllUsers(prev => [...prev, newUser]);
+      window.sessionStorage.setItem(SESSION_KEY, newUser.id);
+      setCurrentUser(newUser);
+      return newUser;
     },
     []
   );
   
   const updateUser = useCallback(async (updatedUser: User) => {
-    const { error } = await supabase.auth.updateUser({
-      email: updatedUser.email,
-      data: {
-        username: updatedUser.username,
-      },
-    });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
+    await db.users.update(updatedUser.id, updatedUser);
+    setAllUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
     setCurrentUser(updatedUser);
   }, []);
 
-  const logout = useCallback(async () => {
-    await supabase.auth.signOut();
+  const logout = useCallback(() => {
+    window.sessionStorage.removeItem(SESSION_KEY);
     setCurrentUser(null);
   }, []);
 
-  return { currentUser, login, signup, logout, updateUser, loading };
+  return { currentUser, allUsers, login, signup, logout, updateUser, isAuthLoading };
 };

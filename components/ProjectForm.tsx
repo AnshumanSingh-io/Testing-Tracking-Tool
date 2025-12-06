@@ -1,24 +1,30 @@
+
 import React, { useState, useEffect } from 'react';
-import { Project } from '../types';
+import { Project, User } from '../types';
 
 interface ProjectFormProps {
-  onSave: (projectData: { name: string; description: string }) => void;
+  onSave: (projectData: { name: string; description: string; members: string[] }) => void;
   onCancel: () => void;
   projectToEdit?: Project | null;
+  allUsers: User[];
+  currentUser: User;
 }
 
-const ProjectForm: React.FC<ProjectFormProps> = ({ onSave, onCancel, projectToEdit }) => {
+const ProjectForm: React.FC<ProjectFormProps> = ({ onSave, onCancel, projectToEdit, allUsers, currentUser }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [members, setMembers] = useState<string[]>([]);
   const [error, setError] = useState('');
   
   useEffect(() => {
     if (projectToEdit) {
       setName(projectToEdit.name);
       setDescription(projectToEdit.description);
+      setMembers(projectToEdit.members || []);
     } else {
         setName('');
         setDescription('');
+        setMembers([]);
     }
   }, [projectToEdit]);
 
@@ -29,8 +35,18 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onSave, onCancel, projectToEd
       return;
     }
     setError('');
-    onSave({ name, description });
+    onSave({ name, description, members });
   };
+
+  const handleToggleMember = (userId: string) => {
+      setMembers(prev => {
+          if (prev.includes(userId)) return prev.filter(id => id !== userId);
+          return [...prev, userId];
+      });
+  }
+
+  // Filter out self from list (owner is implicit)
+  const assignableUsers = allUsers.filter(u => u.id !== currentUser.id);
 
   return (
     <div 
@@ -66,6 +82,30 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onSave, onCancel, projectToEd
               placeholder="A brief description of the project..."
             />
           </div>
+          
+          <div>
+             <label className="block text-sm font-medium text-gray-300 mb-2">Team Members (Access)</label>
+             <div className="bg-gray-900 border border-gray-700 rounded-lg p-3 max-h-40 overflow-y-auto space-y-2">
+                 {assignableUsers.length > 0 ? assignableUsers.map(user => (
+                     <div key={user.id} className="flex items-center gap-3">
+                         <input 
+                            type="checkbox" 
+                            id={`member-${user.id}`}
+                            checked={members.includes(user.id)}
+                            onChange={() => handleToggleMember(user.id)}
+                            className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-600 focus:ring-indigo-500"
+                         />
+                         <label htmlFor={`member-${user.id}`} className="text-gray-300 text-sm cursor-pointer select-none">
+                             {user.username} <span className="text-gray-500 text-xs">({user.role})</span>
+                         </label>
+                     </div>
+                 )) : (
+                     <p className="text-gray-500 text-sm italic">No other users available to assign.</p>
+                 )}
+             </div>
+             <p className="text-xs text-gray-500 mt-1">Selected users will be able to view and access this project.</p>
+          </div>
+
           <div className="flex justify-end gap-4 pt-4">
              <button
               type="button"

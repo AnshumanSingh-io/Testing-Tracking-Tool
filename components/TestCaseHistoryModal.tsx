@@ -1,10 +1,11 @@
 import React from 'react';
-import { TestCase, TestRun, TestRunEntry, ExecutionStatus } from '../types';
+import { TestCase, TestRun, TestRunEntry, ExecutionStatus, User } from '../types';
 
 interface TestCaseHistoryModalProps {
   testCase: TestCase;
   testRuns: TestRun[];
   testRunEntries: TestRunEntry[];
+  allUsers: User[];
   onCancel: () => void;
 }
 
@@ -16,7 +17,8 @@ const statusConfig: Record<ExecutionStatus, { color: string, text: string }> = {
 };
 
 
-const TestCaseHistoryModal: React.FC<TestCaseHistoryModalProps> = ({ testCase, testRuns, testRunEntries, onCancel }) => {
+const TestCaseHistoryModal: React.FC<TestCaseHistoryModalProps> = ({ testCase, testRuns, testRunEntries, allUsers, onCancel }) => {
+    const userMap = new Map(allUsers.map(u => [u.id, u.username]));
     
     const history = testRunEntries
         .filter(entry => entry.testCaseId === testCase.id)
@@ -25,7 +27,7 @@ const TestCaseHistoryModal: React.FC<TestCaseHistoryModalProps> = ({ testCase, t
             return {
                 ...entry,
                 runName: run?.name || 'Unknown Run',
-                tester: run?.tester || 'N/A'
+                tester: userMap.get(run?.testerId || '') || 'N/A'
             }
         })
         .sort((a,b) => new Date(b.executedAt || 0).getTime() - new Date(a.executedAt || 0).getTime());

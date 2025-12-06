@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Priority, Status } from '../types';
@@ -107,7 +108,7 @@ const GenerateTestCasesModal: React.FC<GenerateTestCasesModalProps> = ({ onAddTe
             .filter((_, index) => selectedIndices.has(index))
             .map(c => ({
                 ...c,
-                status: Status.NotStarted,
+                status: Status.Pending,
             }));
         onAddTestCases(casesToAdd);
     };
